@@ -148,3 +148,7 @@ cython_debug/
 C:\Users\avs20\Documents\GitHub\ViT-EmotionClassificationPytorch\imagenet21k+imagenet2012_ViT-B_16 (1).npz
 
 imagenet21k+imagenet2012_ViT-B_16 (1).npz
+checkpoint
+data
+attention_data
+output
