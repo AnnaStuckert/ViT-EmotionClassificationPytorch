@@ -125,7 +125,8 @@ def get_loader(args):
 
     # Dataset Path
     data_dir = (
-        "/Users/annastuckert/Documents/GitHub/ViT-EmotionClassificationPytorch/data"
+        #"/Users/annastuckert/Documents/GitHub/ViT-EmotionClassificationPytorch/data"
+        r"C:\Users\avs20\Documents\GitHub\ViT-EmotionClassificationPytorch\data"
     )
 
     # Debugging output
@@ -150,11 +151,16 @@ def get_loader(args):
 
     # Ensure dataset is not empty
     assert len(dataset) > 0, "❌ Dataset is empty! No valid images found."
+    print(f"📌 Total images in dataset: {len(dataset)} (Expected: 9297)")
 
     # Split dataset into train and test
     train_size = int(0.8 * len(dataset))  # 80% training
     test_size = len(dataset) - train_size  # 20% testing
     trainset, testset = random_split(dataset, [train_size, test_size])
+    print(f"📌 Total images: {len(dataset)} (Expected: 9297)")
+    print(f"📌 Training set: {len(trainset)}")
+    print(f"📌 Validation set: {len(testset)}")
+
 
     # Apply test-specific transforms
     testset.dataset.transform = transform_test

@@ -330,7 +330,7 @@ def main():
     )
     parser.add_argument(
         "--num_steps",
-        default=10000,
+        default=1000,
         type=int,
         help="Total number of training epochs to perform.",
     )
