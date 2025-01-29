@@ -110,7 +110,22 @@ def valid(args, model, writer, test_loader, global_step):
         batch = tuple(t.to(args.device) for t in batch)
         x, y = batch
         with torch.no_grad():
-            logits = model(x)[0]
+            # logits = model(x)[0]
+            logits, attn_weights, cls_token = model(x)  # Unpack CLS token as well
+
+            # Save CLS token with corresponding labels and dataset type (validation)
+            cls_tokens = cls_token.detach().cpu().numpy()
+            labels = y.detach().cpu().numpy()
+
+            cls_data = {
+                "cls_tokens": cls_tokens.tolist(),
+                "labels": labels.tolist(),
+                "dataset": "validation",
+            }
+
+            save_path = os.path.join(args.output_dir, "cls_tokens_valid.json")
+            with open(save_path, "a") as f:
+                f.write(json.dumps(cls_data) + "\n")
 
             eval_loss = loss_fct(logits, y)
             eval_losses.update(eval_loss.item())
@@ -206,7 +221,23 @@ def train(args, model):
         for step, batch in enumerate(epoch_iterator):
             batch = tuple(t.to(args.device) for t in batch)
             x, y = batch
-            loss = model(x, y)
+            # loss = model(x, y)
+            loss, attn_weights, cls_token = model(
+                x, y
+            )  # Unpack CLS token and attention weights
+            # Save CLS token with corresponding labels and dataset type (training)
+            cls_tokens = cls_token.detach().cpu().numpy()
+            labels = y.detach().cpu().numpy()
+
+            cls_data = {
+                "cls_tokens": cls_tokens.tolist(),
+                "labels": labels.tolist(),
+                "dataset": "train",
+            }
+
+            save_path = os.path.join(args.output_dir, "cls_tokens_train.json")
+            with open(save_path, "a") as f:
+                f.write(json.dumps(cls_data) + "\n")
 
             if args.gradient_accumulation_steps > 1:
                 loss = loss / args.gradient_accumulation_steps

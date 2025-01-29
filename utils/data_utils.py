@@ -125,7 +125,7 @@ def get_loader(args):
 
     # Dataset Path
     data_dir = (
-        #"/Users/annastuckert/Documents/GitHub/ViT-EmotionClassificationPytorch/data"
+        # "/Users/annastuckert/Documents/GitHub/ViT-EmotionClassificationPytorch/data"
         r"C:\Users\avs20\Documents\GitHub\ViT-EmotionClassificationPytorch\data"
     )
 
@@ -160,7 +160,6 @@ def get_loader(args):
     print(f"📌 Total images: {len(dataset)} (Expected: 9297)")
     print(f"📌 Training set: {len(trainset)}")
     print(f"📌 Validation set: {len(testset)}")
-
 
     # Apply test-specific transforms
     testset.dataset.transform = transform_test
