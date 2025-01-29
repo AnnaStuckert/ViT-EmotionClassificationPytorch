@@ -1,7 +1,7 @@
-# coding=utf-8
 from __future__ import absolute_import, division, print_function
 
 import argparse
+import json
 import logging
 import os
 import random
@@ -17,7 +17,6 @@ from models.modeling import CONFIGS, VisionTransformer
 from utils.data_utils import get_loader
 from utils.dist_util import get_world_size
 from utils.scheduler import WarmupCosineSchedule, WarmupLinearSchedule
-import json
 
 # from apex import amp
 # from apex.parallel import DistributedDataParallel as DDP
@@ -114,35 +113,15 @@ def valid(args, model, writer, test_loader, global_step):
             # logits = model(x)[0]
             logits, attn_weights, cls_token = model(x)  # Unpack CLS token as well
 
-
-        if step == len(train_loader) - 1:  # Save only last batch of training
-            metadata_store = []
+            # Save CLS token with corresponding labels and dataset type (validation)
             cls_tokens = cls_token.detach().cpu().numpy()
             labels = y.detach().cpu().numpy()
 
-            for i in range(y.shape[0]):
-                metadata_store.append({
-                    "image_name": f"train_{step * args.train_batch_size + i}",  # Change if filenames are available
-                    "label": labels[i].item(),
-                    "cls_token": cls_tokens[i].tolist()
-                })
-
-            # Save as JSON
-            save_path = os.path.join(args.output_dir, "cls_tokens_train_last.json")
-            with open(save_path, "w") as f:  # Overwrites previous file
-                json.dump(metadata_store, f, indent=4)
-
-            print(f"Saved last training CLS tokens to {save_path}")
-
-            # Save CLS token with corresponding labels and dataset type (validation)
-            #cls_tokens = cls_token.detach().cpu().numpy()
-            #labels = y.detach().cpu().numpy()
-
-            #cls_data = {
-             #   "cls_tokens": cls_tokens.tolist(),
-              #  "labels": labels.tolist(),
-               # "dataset": "validation",
-            #}
+            cls_data = {
+                "cls_tokens": cls_tokens.tolist(),
+                "labels": labels.tolist(),
+                "dataset": "validation",
+            }
 
             save_path = os.path.join(args.output_dir, "cls_tokens_valid.json")
             with open(save_path, "a") as f:
@@ -246,34 +225,15 @@ def train(args, model):
             loss, attn_weights, cls_token = model(
                 x, y
             )  # Unpack CLS token and attention weights
-            if step == len(test_loader) - 1:  # Save only last batch of validation
-                metadata_store = []
-                cls_tokens = cls_token.detach().cpu().numpy()
-                labels = y.detach().cpu().numpy()
+            # Save CLS token with corresponding labels and dataset type (training)
+            cls_tokens = cls_token.detach().cpu().numpy()
+            labels = y.detach().cpu().numpy()
 
-                for i in range(y.shape[0]):
-                    metadata_store.append({
-                        "image_name": f"valid_{step * args.eval_batch_size + i}",  # Change if filenames are available
-                        "label": labels[i].item(),
-                        "cls_token": cls_tokens[i].tolist()
-                    })
-
-            # Save as JSON
-            save_path = os.path.join(args.output_dir, "cls_tokens_valid_last.json")
-            with open(save_path, "w") as f:  # Overwrites previous file
-                json.dump(metadata_store, f, indent=4)
-
-            print(f"Saved last validation CLS tokens to {save_path}")
-
-            ## Save CLS token with corresponding labels and dataset type (training)
-            #cls_tokens = cls_token.detach().cpu().numpy()
-            #labels = y.detach().cpu().numpy()
-
-            #cls_data = {
-            #    "cls_tokens": cls_tokens.tolist(),
-            #    "labels": labels.tolist(),
-            #    "dataset": "train",
-            #}
+            cls_data = {
+                "cls_tokens": cls_tokens.tolist(),
+                "labels": labels.tolist(),
+                "dataset": "train",
+            }
 
             save_path = os.path.join(args.output_dir, "cls_tokens_train.json")
             with open(save_path, "a") as f:
@@ -401,7 +361,7 @@ def main():
     )
     parser.add_argument(
         "--num_steps",
-        default=1000,
+        default=100,
         type=int,
         help="Total number of training epochs to perform.",
     )
